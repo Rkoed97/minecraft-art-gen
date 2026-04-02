@@ -57,6 +57,11 @@ class TestValidateProjectPath:
         with pytest.raises(ValueError):
             validate_project_path(path)
 
+    def test_not_writable_directory(self, tmp_dir, monkeypatch):
+        monkeypatch.setattr(os, "access", lambda path, mode: False)
+        with pytest.raises(ValueError, match="not writable"):
+            validate_project_path(tmp_dir)
+
 
 class TestValidatePngPath:
     def test_valid_png(self, tmp_dir):
@@ -78,6 +83,21 @@ class TestValidatePngPath:
         with pytest.raises(ValueError):
             validate_png_path(os.path.join(tmp_dir, "missing.png"))
 
+    def test_path_is_directory(self, tmp_dir, monkeypatch):
+        # A path that exists and ends in .png but is not a file
+        monkeypatch.setattr(os.path, "isfile", lambda p: False)
+        path = os.path.join(tmp_dir, "fake.png")
+        open(path, "w").close()
+        with pytest.raises(ValueError, match="not a file"):
+            validate_png_path(path)
+
+    def test_not_readable(self, tmp_dir, monkeypatch):
+        path = os.path.join(tmp_dir, "test.png")
+        open(path, "w").close()
+        monkeypatch.setattr(os, "access", lambda p, mode: False)
+        with pytest.raises(ValueError, match="not readable"):
+            validate_png_path(path)
+
 
 class TestValidateSavePath:
     def test_valid_path(self, tmp_dir):
@@ -94,3 +114,8 @@ class TestValidateSavePath:
     def test_nonexistent_directory(self):
         with pytest.raises(ValueError):
             validate_save_path("/nonexistent_path_xyz/out.png")
+
+    def test_not_writable_directory(self, tmp_dir, monkeypatch):
+        monkeypatch.setattr(os, "access", lambda p, mode: False)
+        with pytest.raises(ValueError, match="not writable"):
+            validate_save_path(os.path.join(tmp_dir, "out.png"))

@@ -6,6 +6,7 @@ from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
 
 from minecraft_art_gen.editor.canvas import PixelCanvas, CELL_SIZE
+from minecraft_art_gen.editor.tools import ToolType
 from minecraft_art_gen.models.pixel_image import PixelImage, TRANSPARENT
 
 RED = (255, 0, 0, 255)
@@ -133,6 +134,61 @@ class TestLargeImagePixmapMode:
 
         assert len(painted_images) == 1
         assert painted_images[0].get_pixel(5, 5) == RED
+
+
+class TestToolSelection:
+    def test_default_tool_is_pen(self, canvas):
+        assert canvas._selected_tool == ToolType.PEN
+
+    def test_set_active_tool_changes_selected(self, canvas):
+        canvas.set_active_tool(ToolType.ERASER)
+        assert canvas._selected_tool == ToolType.ERASER
+
+    def test_left_click_with_eraser_tool_erases(self, canvas, qtbot):
+        img = PixelImage(16, 16, fill=RED)
+        canvas.set_image(img)
+        canvas.set_active_tool(ToolType.ERASER)
+
+        vp = _pixel_to_viewport(canvas, 2, 2)
+        erased_images = []
+        canvas.pixel_painted.connect(erased_images.append)
+
+        qtbot.mousePress(canvas.viewport(), Qt.MouseButton.LeftButton, pos=vp)
+        qtbot.mouseRelease(canvas.viewport(), Qt.MouseButton.LeftButton, pos=vp)
+
+        assert len(erased_images) == 1
+        assert erased_images[0].get_pixel(2, 2) == TRANSPARENT
+
+    def test_left_click_with_pen_tool_paints(self, canvas, qtbot):
+        img = PixelImage(16, 16)
+        canvas.set_image(img)
+        canvas.set_active_tool(ToolType.PEN)
+        canvas._get_current_color = lambda: RED
+
+        vp = _pixel_to_viewport(canvas, 3, 3)
+        painted_images = []
+        canvas.pixel_painted.connect(painted_images.append)
+
+        qtbot.mousePress(canvas.viewport(), Qt.MouseButton.LeftButton, pos=vp)
+        qtbot.mouseRelease(canvas.viewport(), Qt.MouseButton.LeftButton, pos=vp)
+
+        assert len(painted_images) == 1
+        assert painted_images[0].get_pixel(3, 3) == RED
+
+    def test_right_click_always_erases_regardless_of_tool(self, canvas, qtbot):
+        img = PixelImage(16, 16, fill=RED)
+        canvas.set_image(img)
+        canvas.set_active_tool(ToolType.PEN)
+
+        vp = _pixel_to_viewport(canvas, 1, 1)
+        erased_images = []
+        canvas.pixel_painted.connect(erased_images.append)
+
+        qtbot.mousePress(canvas.viewport(), Qt.MouseButton.RightButton, pos=vp)
+        qtbot.mouseRelease(canvas.viewport(), Qt.MouseButton.RightButton, pos=vp)
+
+        assert len(erased_images) == 1
+        assert erased_images[0].get_pixel(1, 1) == TRANSPARENT
 
 
 class TestUndoRedo:

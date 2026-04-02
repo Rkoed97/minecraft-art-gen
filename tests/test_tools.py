@@ -1,8 +1,20 @@
-"""Tests for PaintTool and EraseTool."""
+"""Tests for PaintTool, EraseTool, and ToolType."""
 
 import pytest
 from minecraft_art_gen.models.pixel_image import PixelImage, TRANSPARENT
-from minecraft_art_gen.editor.tools import PaintTool, EraseTool, Stroke
+from minecraft_art_gen.editor.tools import PaintTool, EraseTool, Stroke, ToolType
+
+
+class TestToolType:
+    def test_pen_and_eraser_exist(self):
+        assert ToolType.PEN is not None
+        assert ToolType.ERASER is not None
+
+    def test_pen_and_eraser_are_distinct(self):
+        assert ToolType.PEN != ToolType.ERASER
+
+    def test_enum_members(self):
+        assert set(ToolType) == {ToolType.PEN, ToolType.ERASER}
 
 RED = (255, 0, 0, 255)
 GREEN = (0, 255, 0, 255)
@@ -52,6 +64,13 @@ class TestStroke:
 
 
 class TestPaintTool:
+    def test_drag_without_begin_creates_stroke(self):
+        tool = PaintTool()
+        img = PixelImage(4, 4)
+        # drag() without begin() should not crash and should paint
+        result = tool.drag(img, 0, 0, (255, 0, 0, 255))
+        assert result.get_pixel(0, 0) == (255, 0, 0, 255)
+
     def test_begin_paints_pixel(self):
         tool = PaintTool()
         img = PixelImage(4, 4)
@@ -101,6 +120,12 @@ class TestPaintTool:
 
 
 class TestEraseTool:
+    def test_drag_without_begin_creates_stroke(self):
+        tool = EraseTool()
+        img = PixelImage(4, 4, fill=(255, 0, 0, 255))
+        result = tool.drag(img, 0, 0)
+        assert result.get_pixel(0, 0) == TRANSPARENT
+
     def test_begin_erases_pixel(self):
         tool = EraseTool()
         img = PixelImage(4, 4, fill=RED)

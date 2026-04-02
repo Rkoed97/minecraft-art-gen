@@ -56,8 +56,6 @@ class TestSavePngAtomicWrite:
         import glob as g
         from minecraft_art_gen.io.png_writer import save_png
 
-        original_replace = os.replace
-
         def failing_replace(src, dst):
             raise OSError("simulated failure")
 
@@ -68,6 +66,23 @@ class TestSavePngAtomicWrite:
         # No leftover tmp files
         tmp_files = g.glob(os.path.join(tmp_dir, "*.png.tmp"))
         assert tmp_files == []
+
+    def test_cleanup_continues_when_unlink_fails(self, tmp_dir, monkeypatch):
+        """OSError from os.unlink during cleanup does not mask the original error."""
+        import os
+        from minecraft_art_gen.io.png_writer import save_png
+
+        def failing_replace(src, dst):
+            raise OSError("write failed")
+
+        def failing_unlink(path):
+            raise OSError("unlink failed")
+
+        monkeypatch.setattr(os, "replace", failing_replace)
+        monkeypatch.setattr(os, "unlink", failing_unlink)
+        path = os.path.join(tmp_dir, "out.png")
+        with pytest.raises(OSError, match="write failed"):
+            save_png(PixelImage(2, 2), path)
 
 
 class TestRoundTrip:

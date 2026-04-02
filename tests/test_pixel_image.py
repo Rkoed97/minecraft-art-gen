@@ -169,3 +169,20 @@ class TestEquality:
         a = PixelImage(2, 2)
         b = PixelImage(3, 2)
         assert a != b
+
+    def test_eq_with_non_pixel_image_returns_not_implemented(self):
+        a = PixelImage(2, 2)
+        assert a.__eq__("not an image") is NotImplemented
+
+
+class TestRepr:
+    def test_repr_format(self):
+        img = PixelImage(4, 8)
+        assert repr(img) == "PixelImage(4x8)"
+
+
+class TestValidateColor:
+    def test_wrong_tuple_length_raises(self):
+        img = PixelImage(2, 2)
+        with pytest.raises(ValueError, match="Color must be"):
+            img.set_pixel(0, 0, (255, 0, 0))  # type: ignore[arg-type]
