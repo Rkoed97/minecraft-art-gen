@@ -79,31 +79,40 @@ class PaintTool:
 
 
 class EraseTool:
-    """Right-click/drag tool: erases pixels to transparent."""
+    """Erase tool: alpha=0 clears to transparent; alpha>0 smudges (sets pixel alpha only)."""
 
     def __init__(self) -> None:
         self._current_stroke: Stroke | None = None
 
-    def begin(self, image: PixelImage, x: int, y: int) -> PixelImage:
+    def begin(self, image: PixelImage, x: int, y: int, alpha: int = 0) -> PixelImage:
         self._current_stroke = Stroke()
-        return self._erase(image, x, y)
+        return self._erase(image, x, y, alpha)
 
-    def drag(self, image: PixelImage, x: int, y: int) -> PixelImage:
+    def drag(self, image: PixelImage, x: int, y: int, alpha: int = 0) -> PixelImage:
         if self._current_stroke is None:
             self._current_stroke = Stroke()
-        return self._erase(image, x, y)
+        return self._erase(image, x, y, alpha)
 
     def end(self) -> Stroke | None:
         stroke = self._current_stroke
         self._current_stroke = None
         return stroke if (stroke and not stroke.is_empty) else None
 
-    def _erase(self, image: PixelImage, x: int, y: int) -> PixelImage:
+    def _erase(self, image: PixelImage, x: int, y: int, alpha: int) -> PixelImage:
         if not (0 <= x < image.width and 0 <= y < image.height):
             return image
         old = image.get_pixel(x, y)
-        if old == TRANSPARENT:
+        if alpha == 0:
+            if old == TRANSPARENT:
+                return image
+            assert self._current_stroke is not None
+            self._current_stroke.record(x, y, old, TRANSPARENT)
+            return image.clear_pixel(x, y)
+        # Smudge: preserve RGB, set alpha only
+        r, g, b, _ = old
+        new_color: RGBA = (r, g, b, alpha)
+        if old == new_color:
             return image
         assert self._current_stroke is not None
-        self._current_stroke.record(x, y, old, TRANSPARENT)
-        return image.clear_pixel(x, y)
+        self._current_stroke.record(x, y, old, new_color)
+        return image.set_pixel(x, y, new_color)

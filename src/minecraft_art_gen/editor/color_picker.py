@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QLineEdit,
-    QGroupBox,
+    QGroupBox, QSlider, QSpinBox,
 )
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QColor, QPainter, QBrush
@@ -10,6 +10,57 @@ from PySide6.QtGui import QColor, QPainter, QBrush
 
 RGBA = tuple[int, int, int, int]
 _DEFAULT_COLOR: RGBA = (0, 0, 0, 255)
+
+
+class RgbaSliderRow(QWidget):
+    """One channel row: label + slider + spinbox, all kept in sync."""
+
+    value_changed = Signal(int)  # emits 0-255
+
+    def __init__(self, label: str, parent=None) -> None:
+        super().__init__(parent)
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(4)
+
+        lbl = QLabel(label)
+        lbl.setFixedWidth(14)
+        layout.addWidget(lbl)
+
+        self._slider = QSlider(Qt.Orientation.Horizontal)
+        self._slider.setRange(0, 255)
+        layout.addWidget(self._slider)
+
+        self._spinbox = QSpinBox()
+        self._spinbox.setRange(0, 255)
+        self._spinbox.setFixedWidth(46)
+        layout.addWidget(self._spinbox)
+
+        self._slider.valueChanged.connect(self._on_slider)
+        self._spinbox.valueChanged.connect(self._on_spinbox)
+
+    def value(self) -> int:
+        return self._slider.value()
+
+    def set_value(self, v: int) -> None:
+        self._slider.blockSignals(True)
+        self._spinbox.blockSignals(True)
+        self._slider.setValue(v)
+        self._spinbox.setValue(v)
+        self._slider.blockSignals(False)
+        self._spinbox.blockSignals(False)
+
+    def _on_slider(self, v: int) -> None:
+        self._spinbox.blockSignals(True)
+        self._spinbox.setValue(v)
+        self._spinbox.blockSignals(False)
+        self.value_changed.emit(v)
+
+    def _on_spinbox(self, v: int) -> None:
+        self._slider.blockSignals(True)
+        self._slider.setValue(v)
+        self._slider.blockSignals(False)
+        self.value_changed.emit(v)
 
 
 class ColorSwatchWidget(QWidget):
@@ -54,13 +105,13 @@ class ColorPickerWidget(QGroupBox):
 
     def _build_ui(self) -> None:
         root = QVBoxLayout(self)
-        root.setSpacing(8)
+        root.setSpacing(6)
 
         # Swatch + pick button
         swatch_row = QHBoxLayout()
         self._swatch = ColorSwatchWidget()
         swatch_row.addWidget(self._swatch)
-        pick_btn = QPushButton("Pick Color…")
+        pick_btn = QPushButton("Pick…")
         pick_btn.clicked.connect(self._open_dialog)
         swatch_row.addWidget(pick_btn)
         root.addLayout(swatch_row)
@@ -75,10 +126,14 @@ class ColorPickerWidget(QGroupBox):
         hex_row.addWidget(self._hex_edit)
         root.addLayout(hex_row)
 
-        # RGBA labels
-        self._rgba_label = QLabel()
-        self._rgba_label.setStyleSheet("font-size: 10px; color: gray;")
-        root.addWidget(self._rgba_label)
+        # RGBA sliders
+        self._r_row = RgbaSliderRow("R")
+        self._g_row = RgbaSliderRow("G")
+        self._b_row = RgbaSliderRow("B")
+        self._a_row = RgbaSliderRow("A")
+        for row in (self._r_row, self._g_row, self._b_row, self._a_row):
+            row.value_changed.connect(self._on_channel_changed)
+            root.addWidget(row)
 
         self._apply_color(_DEFAULT_COLOR)
 
@@ -109,12 +164,29 @@ class ColorPickerWidget(QGroupBox):
             return
         self._apply_color((r, g, b, a))
 
+    def _on_channel_changed(self, _v: int) -> None:
+        color = (
+            self._r_row.value(),
+            self._g_row.value(),
+            self._b_row.value(),
+            self._a_row.value(),
+        )
+        self._color = color
+        self._swatch.set_color(color)
+        self._hex_edit.blockSignals(True)
+        self._hex_edit.setText(_rgba_to_hex(color))
+        self._hex_edit.blockSignals(False)
+        self.color_changed.emit(color)
+
     def _apply_color(self, color: RGBA) -> None:
         self._color = color
         self._swatch.set_color(color)
         self._hex_edit.setText(_rgba_to_hex(color))
         r, g, b, a = color
-        self._rgba_label.setText(f"R:{r}  G:{g}  B:{b}  A:{a}")
+        self._r_row.set_value(r)
+        self._g_row.set_value(g)
+        self._b_row.set_value(b)
+        self._a_row.set_value(a)
         self.color_changed.emit(color)
 
 

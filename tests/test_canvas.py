@@ -75,6 +75,7 @@ class TestPainting:
     def test_right_click_erases_pixel(self, canvas, qtbot):
         img = PixelImage(16, 16, fill=RED)
         canvas.set_image(img)
+        canvas._get_current_color = lambda: (0, 0, 0, 0)  # alpha=0 → clear
 
         vp = _pixel_to_viewport(canvas, 1, 1)
         erased_images = []
@@ -148,6 +149,7 @@ class TestToolSelection:
         img = PixelImage(16, 16, fill=RED)
         canvas.set_image(img)
         canvas.set_active_tool(ToolType.ERASER)
+        canvas._get_current_color = lambda: (0, 0, 0, 0)  # alpha=0 → clear
 
         vp = _pixel_to_viewport(canvas, 2, 2)
         erased_images = []
@@ -179,6 +181,7 @@ class TestToolSelection:
         img = PixelImage(16, 16, fill=RED)
         canvas.set_image(img)
         canvas.set_active_tool(ToolType.PEN)
+        canvas._get_current_color = lambda: (0, 0, 0, 0)  # alpha=0 → clear
 
         vp = _pixel_to_viewport(canvas, 1, 1)
         erased_images = []
@@ -189,6 +192,41 @@ class TestToolSelection:
 
         assert len(erased_images) == 1
         assert erased_images[0].get_pixel(1, 1) == TRANSPARENT
+
+    def test_eraser_with_alpha_smudges_pixel(self, canvas, qtbot):
+        img = PixelImage(16, 16, fill=RED)
+        canvas.set_image(img)
+        canvas.set_active_tool(ToolType.ERASER)
+        # Return a color with alpha=128 so eraser smudges instead of clearing
+        canvas._get_current_color = lambda: (0, 0, 0, 128)
+
+        vp = _pixel_to_viewport(canvas, 4, 4)
+        painted = []
+        canvas.pixel_painted.connect(painted.append)
+
+        qtbot.mousePress(canvas.viewport(), Qt.MouseButton.LeftButton, pos=vp)
+        qtbot.mouseRelease(canvas.viewport(), Qt.MouseButton.LeftButton, pos=vp)
+
+        assert len(painted) == 1
+        r, g, b, a = painted[0].get_pixel(4, 4)
+        assert (r, g, b) == (255, 0, 0)  # RGB from original RED pixel preserved
+        assert a == 128
+
+    def test_right_click_smudges_with_nonzero_alpha(self, canvas, qtbot):
+        img = PixelImage(16, 16, fill=RED)
+        canvas.set_image(img)
+        canvas._get_current_color = lambda: (0, 0, 0, 64)
+
+        vp = _pixel_to_viewport(canvas, 2, 2)
+        painted = []
+        canvas.pixel_painted.connect(painted.append)
+
+        qtbot.mousePress(canvas.viewport(), Qt.MouseButton.RightButton, pos=vp)
+        qtbot.mouseRelease(canvas.viewport(), Qt.MouseButton.RightButton, pos=vp)
+
+        r, g, b, a = painted[0].get_pixel(2, 2)
+        assert (r, g, b) == (255, 0, 0)
+        assert a == 64
 
 
 class TestUndoRedo:

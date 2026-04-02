@@ -219,7 +219,8 @@ class PixelCanvas(QGraphicsView):
         if event.button() == Qt.MouseButton.LeftButton:
             if self._selected_tool == ToolType.ERASER:
                 self._active_tool = "erase"
-                self._image = self._erase_tool.begin(self._image, x, y)
+                alpha = self._get_current_color()[3]
+                self._image = self._erase_tool.begin(self._image, x, y, alpha)
             else:
                 self._active_tool = "paint"
                 color = self._get_current_color()
@@ -230,7 +231,8 @@ class PixelCanvas(QGraphicsView):
             self.pixels_changed.emit(self._image)
         elif event.button() == Qt.MouseButton.RightButton:
             self._active_tool = "erase"
-            self._image = self._erase_tool.begin(self._image, x, y)
+            alpha = self._get_current_color()[3]
+            self._image = self._erase_tool.begin(self._image, x, y, alpha)
             self._update_single_rect(x, y)
             if self._use_pixmap_mode:
                 self._refresh_pixmap()
@@ -267,7 +269,8 @@ class PixelCanvas(QGraphicsView):
             self.pixels_changed.emit(self._image)
         elif self._active_tool == "erase" and pos is not None:
             x, y = pos
-            self._image = self._erase_tool.drag(self._image, x, y)
+            alpha = self._get_current_color()[3]
+            self._image = self._erase_tool.drag(self._image, x, y, alpha)
             self._update_single_rect(x, y)
             if self._use_pixmap_mode:
                 self._refresh_pixmap()

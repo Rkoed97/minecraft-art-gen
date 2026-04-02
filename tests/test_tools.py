@@ -126,6 +126,40 @@ class TestEraseTool:
         result = tool.drag(img, 0, 0)
         assert result.get_pixel(0, 0) == TRANSPARENT
 
+    def test_erase_alpha_zero_clears_pixel(self):
+        tool = EraseTool()
+        img = PixelImage(4, 4, fill=RED)
+        result = tool.begin(img, 1, 1, alpha=0)
+        assert result.get_pixel(1, 1) == TRANSPARENT
+
+    def test_erase_alpha_nonzero_smudges_preserving_rgb(self):
+        tool = EraseTool()
+        img = PixelImage(4, 4, fill=RED)  # RED = (255, 0, 0, 255)
+        result = tool.begin(img, 1, 1, alpha=128)
+        assert result.get_pixel(1, 1) == (255, 0, 0, 128)
+
+    def test_erase_smudge_no_op_when_alpha_already_matches(self):
+        tool = EraseTool()
+        img = PixelImage(4, 4, fill=(255, 0, 0, 128))
+        result = tool.begin(img, 0, 0, alpha=128)
+        assert result == img
+        assert tool.end() is None  # no stroke recorded
+
+    def test_erase_smudge_out_of_bounds_ignored(self):
+        tool = EraseTool()
+        img = PixelImage(4, 4, fill=RED)
+        result = tool.begin(img, 99, 99, alpha=128)
+        assert result == img
+
+    def test_erase_smudge_undo_restores_original_alpha(self):
+        tool = EraseTool()
+        img = PixelImage(4, 4, fill=RED)
+        smudged = tool.begin(img, 0, 0, alpha=64)
+        stroke = tool.end()
+        assert stroke is not None
+        reverted = stroke.revert(smudged)
+        assert reverted.get_pixel(0, 0) == RED
+
     def test_begin_erases_pixel(self):
         tool = EraseTool()
         img = PixelImage(4, 4, fill=RED)
