@@ -10,8 +10,8 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Signal, Qt, QSize
 from PySide6.QtGui import QKeySequence, QShortcut
 
-from src.models.asset_type import AssetType
-from src.models.pixel_image import PixelImage
+from minecraft_art_gen.models.asset_type import AssetType
+from minecraft_art_gen.models.pixel_image import PixelImage
 
 
 class EditorScreen(QWidget):
@@ -75,7 +75,7 @@ class EditorScreen(QWidget):
         left_panel = self._build_left_panel()
         main_area.addWidget(left_panel)
 
-        from src.editor.canvas import PixelCanvas
+        from minecraft_art_gen.editor.canvas import PixelCanvas
         self._canvas = PixelCanvas()
         self._canvas.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self._canvas.pixel_painted.connect(self._on_pixel_painted)
@@ -130,12 +130,18 @@ class EditorScreen(QWidget):
         return bar
 
     def _build_left_panel(self) -> QWidget:
-        from src.editor.color_picker import ColorPickerWidget
+        from minecraft_art_gen.editor.color_picker import ColorPickerWidget
+        from minecraft_art_gen.editor.tool_selector import ToolSelectorWidget
         panel = QWidget()
         panel.setFixedWidth(200)
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(12)
+
+        # Tool selector
+        self._tool_selector = ToolSelectorWidget()
+        self._tool_selector.tool_changed.connect(self._on_tool_changed)
+        layout.addWidget(self._tool_selector)
 
         # Color picker
         self._color_picker = ColorPickerWidget()
@@ -199,6 +205,8 @@ class EditorScreen(QWidget):
         QShortcut(QKeySequence("Ctrl+Z"), self).activated.connect(self._undo)
         QShortcut(QKeySequence("Ctrl+Y"), self).activated.connect(self._redo)
         QShortcut(QKeySequence("Escape"), self).activated.connect(self._on_back)
+        QShortcut(QKeySequence("P"), self).activated.connect(self._select_pen)
+        QShortcut(QKeySequence("E"), self).activated.connect(self._select_eraser)
 
     # ------------------------------------------------------------------
     # Undo / Redo (delegated to canvas)
@@ -237,7 +245,7 @@ class EditorScreen(QWidget):
             self._do_save(path)
 
     def _do_save(self, path: str) -> None:
-        from src.io.png_writer import save_png
+        from minecraft_art_gen.io.png_writer import save_png
         try:
             save_png(self._pixel_image, path)
         except (ValueError, OSError) as exc:
@@ -260,7 +268,7 @@ class EditorScreen(QWidget):
         path, _ = QFileDialog.getOpenFileName(self, "Open PNG", start, "PNG Images (*.png)")
         if not path:
             return
-        from src.io.png_reader import load_png
+        from minecraft_art_gen.io.png_reader import load_png
         try:
             img = load_png(path)
         except (ValueError, OSError) as exc:
@@ -309,6 +317,17 @@ class EditorScreen(QWidget):
     # ------------------------------------------------------------------
     # Canvas signal handlers
     # ------------------------------------------------------------------
+
+    def _on_tool_changed(self, tool) -> None:
+        self._canvas.set_active_tool(tool)
+
+    def _select_pen(self) -> None:
+        from minecraft_art_gen.editor.tools import ToolType
+        self._tool_selector.set_tool(ToolType.PEN)
+
+    def _select_eraser(self) -> None:
+        from minecraft_art_gen.editor.tools import ToolType
+        self._tool_selector.set_tool(ToolType.ERASER)
 
     def _on_pixel_painted(self, pixel_image: PixelImage) -> None:
         self._pixel_image = pixel_image

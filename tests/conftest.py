@@ -8,7 +8,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 import pytest
 
-from src.models.pixel_image import PixelImage
+from minecraft_art_gen.models.pixel_image import PixelImage
 
 
 @pytest.fixture

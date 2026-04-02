@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "minecraft-art-gen"
@@ -20,17 +20,22 @@ dev = [
 ]
 
 [project.scripts]
-minecraft-art-gen = "src.main:main"
+minecraft-art-gen = "minecraft_art_gen.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--cov=src --cov-report=term-missing --cov-fail-under=80"
+addopts = "--cov=minecraft_art_gen --cov-report=term-missing --cov-fail-under=80"
 
 [tool.coverage.run]
+source = ["src"]
 # GUI view-layer files are excluded; they require interactive/E2E testing
 omit = [
-    "src/main.py",
-    "src/app.py",
-    "src/screens/*",
-    "src/editor/color_picker.py",
+    "src/minecraft_art_gen/main.py",
+    "src/minecraft_art_gen/app.py",
+    "src/minecraft_art_gen/screens/*",
+    "src/minecraft_art_gen/editor/color_picker.py",
+    "src/minecraft_art_gen/editor/canvas.py",
 ]

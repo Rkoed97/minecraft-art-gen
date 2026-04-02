@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QFont
 
-from src.utils.validators import validate_project_path
+from minecraft_art_gen.utils.validators import validate_project_path
 
 _SETTINGS_KEY = "recent_projects"
 _MAX_RECENT = 8

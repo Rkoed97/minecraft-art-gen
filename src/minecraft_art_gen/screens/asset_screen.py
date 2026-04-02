@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QFont
 
-from src.models.asset_type import ASSET_TYPES, ASSET_TYPE_ORDER, AssetType
+from minecraft_art_gen.models.asset_type import ASSET_TYPES, ASSET_TYPE_ORDER, AssetType
 
 # Asset types that support resolution variants
 _MULTI_VARIANT_KEYS = {"block", "item", "trim"}

@@ -7,11 +7,11 @@ These tests exercise the complete data pipeline:
 import os
 import pytest
 
-from src.models.asset_type import ASSET_TYPES
-from src.models.pixel_image import PixelImage, TRANSPARENT
-from src.editor.tools import PaintTool, EraseTool
-from src.io.png_writer import save_png
-from src.io.png_reader import load_png
+from minecraft_art_gen.models.asset_type import ASSET_TYPES
+from minecraft_art_gen.models.pixel_image import PixelImage, TRANSPARENT
+from minecraft_art_gen.editor.tools import PaintTool, EraseTool
+from minecraft_art_gen.io.png_writer import save_png
+from minecraft_art_gen.io.png_reader import load_png
 
 RED = (255, 0, 0, 255)
 GREEN = (0, 255, 0, 255)
@@ -334,7 +334,7 @@ class TestFullWorkflow:
 
     def test_all_asset_types_can_be_created_and_saved(self, tmp_dir):
         """Smoke test: every asset type in the registry can produce a valid PNG."""
-        from src.models.asset_type import ASSET_TYPES, ASSET_TYPE_ORDER
+        from minecraft_art_gen.models.asset_type import ASSET_TYPES, ASSET_TYPE_ORDER
         for key in ASSET_TYPE_ORDER:
             at = ASSET_TYPES[key]
             w, h = at.default_size

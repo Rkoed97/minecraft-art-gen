@@ -4,9 +4,16 @@ Tools operate purely on PixelImage data — no GUI dependency.
 Each tool accumulates pixel changes during a stroke and commits them as a batch.
 """
 
-from src.models.pixel_image import PixelImage, TRANSPARENT
+from enum import Enum, auto
+
+from minecraft_art_gen.models.pixel_image import PixelImage, TRANSPARENT
 
 RGBA = tuple[int, int, int, int]
+
+
+class ToolType(Enum):
+    PEN = auto()
+    ERASER = auto()
 
 
 class Stroke:

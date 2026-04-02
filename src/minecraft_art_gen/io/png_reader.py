@@ -2,8 +2,8 @@
 
 from PIL import Image, UnidentifiedImageError
 
-from src.models.pixel_image import PixelImage
-from src.utils.validators import validate_png_path
+from minecraft_art_gen.models.pixel_image import PixelImage
+from minecraft_art_gen.utils.validators import validate_png_path
 
 
 def load_png(path: str) -> PixelImage:

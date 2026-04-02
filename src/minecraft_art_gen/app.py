@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QMainWindow, QStackedWidget
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCloseEvent
 
-from src.models.asset_type import AssetType
+from minecraft_art_gen.models.asset_type import AssetType
 
 
 class MainWindow(QMainWindow):
@@ -20,9 +20,9 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self._stack)
 
         # Import here to avoid circular imports at module level
-        from src.screens.project_screen import ProjectScreen
-        from src.screens.asset_screen import AssetScreen
-        from src.screens.editor_screen import EditorScreen
+        from minecraft_art_gen.screens.project_screen import ProjectScreen
+        from minecraft_art_gen.screens.asset_screen import AssetScreen
+        from minecraft_art_gen.screens.editor_screen import EditorScreen
 
         self._project_screen = ProjectScreen()
         self._asset_screen = AssetScreen()
@@ -69,7 +69,7 @@ class MainWindow(QMainWindow):
         self._go_to_editor_screen()
 
     def _on_open_file(self, file_path: str) -> None:
-        from src.io.png_reader import load_png
+        from minecraft_art_gen.io.png_reader import load_png
         try:
             pixel_image = load_png(file_path)
         except (ValueError, OSError) as exc:

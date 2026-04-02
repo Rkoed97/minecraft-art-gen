@@ -18,8 +18,8 @@ from PySide6.QtGui import (
     QWheelEvent, QMouseEvent,
 )
 
-from src.models.pixel_image import PixelImage
-from src.editor.tools import PaintTool, EraseTool, Stroke
+from minecraft_art_gen.models.pixel_image import PixelImage
+from minecraft_art_gen.editor.tools import PaintTool, EraseTool, Stroke, ToolType
 
 RGBA = tuple[int, int, int, int]
 
@@ -68,6 +68,7 @@ class PixelCanvas(QGraphicsView):
         self._paint_tool = PaintTool()
         self._erase_tool = EraseTool()
         self._active_tool: str = "none"  # "paint" | "erase" | "pan" | "none"
+        self._selected_tool: ToolType = ToolType.PEN
 
         # Middle-mouse pan state
         self._pan_last: QPointF | None = None
@@ -81,6 +82,9 @@ class PixelCanvas(QGraphicsView):
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
+
+    def set_active_tool(self, tool: ToolType) -> None:
+        self._selected_tool = tool
 
     def set_image(self, image: PixelImage) -> None:
         self._image = image
@@ -213,9 +217,13 @@ class PixelCanvas(QGraphicsView):
 
         x, y = pos
         if event.button() == Qt.MouseButton.LeftButton:
-            self._active_tool = "paint"
-            color = self._get_current_color()
-            self._image = self._paint_tool.begin(self._image, x, y, color)
+            if self._selected_tool == ToolType.ERASER:
+                self._active_tool = "erase"
+                self._image = self._erase_tool.begin(self._image, x, y)
+            else:
+                self._active_tool = "paint"
+                color = self._get_current_color()
+                self._image = self._paint_tool.begin(self._image, x, y, color)
             self._update_single_rect(x, y)
             if self._use_pixmap_mode:
                 self._refresh_pixmap()

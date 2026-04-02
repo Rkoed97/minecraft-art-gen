@@ -9,7 +9,7 @@ os.environ.setdefault("QT_AUTO_SCREEN_SCALE_FACTOR", "0")
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import Qt
 
-from src.app import MainWindow
+from minecraft_art_gen.app import MainWindow
 
 
 def main() -> None:

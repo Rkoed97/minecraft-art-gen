@@ -1,7 +1,7 @@
 """Save PixelImage to PNG files."""
 
-from src.models.pixel_image import PixelImage
-from src.utils.validators import validate_save_path
+from minecraft_art_gen.models.pixel_image import PixelImage
+from minecraft_art_gen.utils.validators import validate_save_path
 
 
 def save_png(image: PixelImage, path: str) -> None:
