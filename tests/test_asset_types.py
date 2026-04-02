@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.models.asset_type import ASSET_TYPES, ASSET_TYPE_ORDER, AssetType
+from minecraft_art_gen.models.asset_type import ASSET_TYPES, ASSET_TYPE_ORDER, AssetType
 
 
 class TestAssetTypeDataclass:

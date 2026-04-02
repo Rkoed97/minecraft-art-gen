@@ -3,7 +3,7 @@
 import os
 import pytest
 
-from src.utils.validators import (
+from minecraft_art_gen.utils.validators import (
     validate_dimensions,
     validate_project_path,
     validate_png_path,

@@ -5,8 +5,8 @@ from PySide6.QtCore import Qt, QPoint, QPointF
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
 
-from src.editor.canvas import PixelCanvas, CELL_SIZE
-from src.models.pixel_image import PixelImage, TRANSPARENT
+from minecraft_art_gen.editor.canvas import PixelCanvas, CELL_SIZE
+from minecraft_art_gen.models.pixel_image import PixelImage, TRANSPARENT
 
 RED = (255, 0, 0, 255)
 GREEN = (0, 255, 0, 255)
@@ -90,12 +90,12 @@ class TestZoom:
     def test_zoom_clamped_to_min(self, canvas):
         canvas._set_zoom(0.01)
         assert canvas._zoom >= canvas._zoom  # doesn't crash
-        from src.editor.canvas import ZOOM_MIN
+        from minecraft_art_gen.editor.canvas import ZOOM_MIN
         canvas._zoom_by(0.0001)
         assert canvas._zoom >= ZOOM_MIN
 
     def test_zoom_clamped_to_max(self, canvas):
-        from src.editor.canvas import ZOOM_MAX
+        from minecraft_art_gen.editor.canvas import ZOOM_MAX
         canvas._zoom_by(10000)
         assert canvas._zoom <= ZOOM_MAX
 

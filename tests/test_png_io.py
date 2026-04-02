@@ -3,9 +3,9 @@
 import os
 import pytest
 
-from src.models.pixel_image import PixelImage
-from src.io.png_reader import load_png
-from src.io.png_writer import save_png
+from minecraft_art_gen.models.pixel_image import PixelImage
+from minecraft_art_gen.io.png_reader import load_png
+from minecraft_art_gen.io.png_writer import save_png
 
 
 RED = (255, 0, 0, 255)
@@ -54,7 +54,7 @@ class TestSavePngAtomicWrite:
         """Temp file is cleaned up when save fails mid-write."""
         import os
         import glob as g
-        from src.io.png_writer import save_png
+        from minecraft_art_gen.io.png_writer import save_png
 
         original_replace = os.replace
 

@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.models.pixel_image import PixelImage, TRANSPARENT
+from minecraft_art_gen.models.pixel_image import PixelImage, TRANSPARENT
 
 
 RED = (255, 0, 0, 255)

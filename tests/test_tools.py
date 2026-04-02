@@ -1,8 +1,8 @@
 """Tests for PaintTool and EraseTool."""
 
 import pytest
-from src.models.pixel_image import PixelImage, TRANSPARENT
-from src.editor.tools import PaintTool, EraseTool, Stroke
+from minecraft_art_gen.models.pixel_image import PixelImage, TRANSPARENT
+from minecraft_art_gen.editor.tools import PaintTool, EraseTool, Stroke
 
 RED = (255, 0, 0, 255)
 GREEN = (0, 255, 0, 255)
